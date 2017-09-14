@@ -1,0 +1,118 @@
+<head>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.21.1/babel.min.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5-nCdEK6EvZf37BDHVZpPPXGpvIEAAyA"></script>
+    <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+	<link rel="stylesheet" href="main.css"/>
+</head>
+
+
+
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+class ChargingStations extends React.Component {
+	
+	constructor(){
+		super();
+		this.state={
+			locations: null,
+			labels: null,
+			status: null
+		};
+	}
+
+	componentDidMount(){
+		
+		fetch('https://xdmyeadcjl.execute-api.us-west-2.amazonaws.com/development/stations',{
+			method: 'get',
+			mode: 'cors'
+		})
+		.then((response)=> {return response.json()})
+		.then((data)=>{
+
+			console.log(data);
+			let locations=[];
+			let labels = [];
+			let status = [];
+			for(let x=0; x<data.length;x++){
+				locations.push({lat: data[x].location.coordinates[1], lng: data[x].location.coordinates[0]});
+				labels.push(data[x].name);
+				status.push(data[x].status)
+			};
+			
+
+			this.setState({
+				locations: locations,
+				labels: labels,
+				status: status
+			});
+		})
+		.catch((error)=>{console.log(error)});
+	}
+	componentDidUpdate(){
+
+		 	this.renderMap();
+	}
+
+	renderMap(){
+
+		// gerographical center of the unites states of america
+		let map = new google.maps.Map(document.getElementById('map'),{
+				center: {lat: 39.8283, lng: -98.5795},
+				zoom: 4
+		}); 
+
+		// Create an array of characters to label markers
+		
+		//	add markers to the map
+		var labels = this.state.labels;
+		var status = this.state.status;
+		let markers = this.state.locations.map(function(location,i){
+
+		
+
+			return new google.maps.Marker({
+				position: location,
+				label: labels[i] +'- '+ status[i]
+			});
+		});
+		// add a marker cluster to manage the markers
+		let markerCluster = new MarkerClusterer(map, markers, {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+	
+	     let styles = {
+	        default: null,
+	        hide: [
+	          {
+	            featureType: 'poi.business',
+	            stylers: [{visibility: 'off'}]
+	          },
+	        ]
+	      };
+
+		map.setOptions({styles: styles['hide']});
+	}
+
+
+
+
+	render(){
+		return(
+			<div className="chargingstations">
+				<div className="map" id="map"/>
+			</div>
+		);
+	}
+};
+ReactDOM.render(
+    <ChargingStations/>,
+    document.getElementById('root')
+);
+</script>
+
+
+
+</body>

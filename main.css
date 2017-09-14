@@ -1,0 +1,14 @@
+.chargingstations {
+
+	display: flex;
+	flex-direction: column;
+}
+
+.map {
+	font-size: 14em;
+	font-family: Arial;
+	color: red;
+	width: 100%;
+	height: 100%;
+}
+
